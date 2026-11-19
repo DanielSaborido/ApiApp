@@ -55,8 +55,6 @@ class GameViewModel(
                 GenresUiState.Success(genres)
             } catch (e: IOException) {
                 GenresUiState.Error
-            } catch (e: Exception) {
-                GenresUiState.Error
             }
         }
     }
@@ -72,8 +70,6 @@ class GameViewModel(
                 val games = apiAppRepository.getGamesByGenre(genreId)
                 GamesUiState.Success(games)
             } catch (e: IOException) {
-                GamesUiState.Error
-            } catch (e: Exception) {
                 GamesUiState.Error
             }
         }
