@@ -3,7 +3,8 @@ package com.example.apiapp.network
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-private const val API_KEY = "6cc6a4e1e5ab407b9bace9a45355c34d"
+private const val API_KEY = "37dea5560e494058945502465024de6a"
+//private const val API_KEY = "6cc6a4e1e5ab407b9bace9a45355c34d"
 
 interface ApiService {
     @GET("genres")

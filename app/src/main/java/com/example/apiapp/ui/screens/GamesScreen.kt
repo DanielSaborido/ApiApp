@@ -14,7 +14,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import com.example.apiapp.R
 import com.example.apiapp.network.Game
 
 @Composable
@@ -54,6 +61,18 @@ fun GamesGridScreen(
                 Column(
                     modifier = Modifier.padding(12.dp)
                 ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder( context = LocalContext.current)
+                            .data(game.background_image)
+                            .crossfade(true)
+                            .build(),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(R.drawable.loading_img),
+                        error = painterResource(R.drawable.ic_broken_image),
+                        contentDescription = game.name,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = game.name,
                         style = MaterialTheme.typography.titleMedium
