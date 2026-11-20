@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 data class Genre(
     val id: Int,
     val name: String,
+    val slug: String,
     @SerialName(value = "image_background")
     val image_background: String
 )
