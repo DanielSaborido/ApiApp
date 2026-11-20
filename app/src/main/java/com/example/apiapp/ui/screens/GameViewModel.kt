@@ -30,10 +30,17 @@ class GameViewModel(
         object Error : GamesUiState
         object Loading : GamesUiState
     }
+    sealed interface GameDetailsUiState {
+        data class Success(val game: Game) : GameDetailsUiState
+        data object Error : GameDetailsUiState
+        data object Loading : GameDetailsUiState
+    }
 
     var genresUiState: GenresUiState by mutableStateOf(GenresUiState.Loading)
         private set
     var gamesUiState: GamesUiState by mutableStateOf(GamesUiState.Loading)
+        private set
+    var gameDetailsUiState: GameDetailsUiState by mutableStateOf(GameDetailsUiState.Loading)
         private set
 
     /**
@@ -71,6 +78,22 @@ class GameViewModel(
                 GamesUiState.Success(games)
             } catch (e: IOException) {
                 GamesUiState.Error
+            }
+        }
+    }
+
+    /**
+     * Retrieves game details belonging to the selected game.
+     */
+    fun getGameDetails(gameId: Int) {
+        viewModelScope.launch {
+            gameDetailsUiState = GameDetailsUiState.Loading
+
+            gameDetailsUiState = try {
+                val gameDetails = apiAppRepository.getGameDetails(gameId)
+                GameDetailsUiState.Success(gameDetails)
+            } catch (e: Exception) {
+                GameDetailsUiState.Error
             }
         }
     }

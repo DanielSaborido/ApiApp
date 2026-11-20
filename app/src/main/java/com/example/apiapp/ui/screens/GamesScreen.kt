@@ -27,6 +27,7 @@ import com.example.apiapp.network.Game
 @Composable
 fun GamesScreen(
     gamesUiState: GameViewModel.GamesUiState,
+    onGameClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     when (gamesUiState) {
@@ -37,6 +38,7 @@ fun GamesScreen(
         is GameViewModel.GamesUiState.Success ->
             GamesGridScreen(
                 games = gamesUiState.games,
+                onGameClick = onGameClick,
                 modifier = modifier
             )
     }
@@ -45,6 +47,7 @@ fun GamesScreen(
 @Composable
 fun GamesGridScreen(
     games: List<Game>,
+    onGameClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -54,6 +57,9 @@ fun GamesGridScreen(
     ) {
         items(games, key = { it.id }) { game ->
             Card(
+                onClick = {
+                    onGameClick(game.id)
+                },
                 modifier = Modifier
                     .padding(4.dp)
                     .fillMaxWidth()
@@ -63,7 +69,7 @@ fun GamesGridScreen(
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder( context = LocalContext.current)
-                            .data(game.background_image)
+                            .data(game.backgroundImage)
                             .crossfade(true)
                             .build(),
                         contentScale = ContentScale.Crop,

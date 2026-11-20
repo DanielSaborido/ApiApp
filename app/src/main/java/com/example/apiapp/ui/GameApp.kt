@@ -35,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.apiapp.network.Genre
+import com.example.apiapp.ui.screens.GameScreen
 import com.example.apiapp.ui.screens.GameViewModel
 import com.example.apiapp.ui.screens.GenresScreen
 import com.example.apiapp.ui.screens.GamesScreen
@@ -43,14 +44,9 @@ enum class GameAppScreen(
     val route: String,
     val title: String
 ) {
-    Genres(
-        route = "Genres",
-        title = "Game Genres"
-    ),
-    Games(
-        route = "Games/{genreId}",
-        title = "Games"
-    )
+    Genres(route = "Genres", title = "Game Genres"),
+    Games(route = "Games/{genreId}", title = "Games"),
+    Game(route = "Game/{gameId}", title = "Game Details")
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -171,11 +167,14 @@ private fun GameAppContent(
                 ) { entry ->
                     val genreId = entry.arguments?.getInt("genreId") ?: 0
                     if (!isCompact) {
-                        Row(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
+                        Row(Modifier.fillMaxSize()) {
                             GamesScreen(
                                 gamesUiState = gameViewModel.gamesUiState,
+                                onGameClick = { gameId ->
+                                    navController.navigate("Game/$gameId") {
+                                        launchSingleTop = true
+                                    }
+                                },
                                 modifier = Modifier
                                     .weight(1.4f)
                                     .fillMaxHeight()
@@ -184,24 +183,36 @@ private fun GameAppContent(
                     } else {
                         GamesScreen(
                             gamesUiState = gameViewModel.gamesUiState,
+                            onGameClick = { gameId ->
+                                navController.navigate("Game/$gameId") {
+                                    launchSingleTop = true
+                                }
+                            },
                             modifier = Modifier.fillMaxSize()
                         )
                     }
                 }
+                composable(
+                    route = GameAppScreen.Game.route,
+                    arguments = listOf(
+                        navArgument("gameId") {
+                            type = NavType.IntType
+                        }
+                    )
+                ) { entry ->
+                    val gameId = entry.arguments?.getInt("gameId")
+                    LaunchedEffect(gameId) {
+                        gameId?.let {
+                            gameViewModel.getGameDetails(it)
+                        }
+                    }
+                    GameScreen(
+                        gameDetailsUiState = gameViewModel.gameDetailsUiState,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
-    }
-}
-
-// Navigate back to genres
-private fun navigateToGenres(
-    navController: NavHostController
-) {
-    if (navController.currentDestination?.route != GameAppScreen.Genres.route) {
-        navController.popBackStack(
-            GameAppScreen.Genres.route,
-            inclusive = false
-        )
     }
 }
 
@@ -249,7 +260,7 @@ private fun GameBottomNavigationBar(
         ) {
             genres.forEach { genre ->
                 val drawableName =
-                    "ic_${genre.slug.replace("-", "_")}"
+                    "ic_${genre.slug?.replace("-", "_")}"
                 val drawableId = remember(genre.slug) {
                     context.resources.getIdentifier(
                         drawableName,
@@ -320,7 +331,7 @@ private fun GameNavigationRail(
     ) {
         genres.forEach { genre ->
             val drawableName =
-                "ic_${genre.slug.replace("-", "_")}"
+                "ic_${genre.slug?.replace("-", "_")}"
             val drawableId = remember(genre.slug) {
                 context.resources.getIdentifier(
                     drawableName,

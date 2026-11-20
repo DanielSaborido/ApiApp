@@ -1,6 +1,7 @@
 package com.example.apiapp.network
 
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 private const val API_KEY = "37dea5560e494058945502465024de6a"
@@ -18,4 +19,10 @@ interface ApiService {
         @Query("key") key: String = API_KEY,
         @Query("page_size") pageSize: Int = 20
     ): GamesResponse
+
+    @GET("games/{id}")
+    suspend fun getGameDetails(
+        @Path("id") gameId: Int,
+        @Query("key") key: String = API_KEY
+    ): Game
 }

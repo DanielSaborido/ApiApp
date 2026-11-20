@@ -33,10 +33,8 @@ fun GenresScreen(
     when (genresUiState) {
         is GameViewModel.GenresUiState.Loading ->
             LoadingScreen(modifier)
-
         is GameViewModel.GenresUiState.Error ->
             ErrorScreen(modifier)
-
         is GameViewModel.GenresUiState.Success ->
             GenresGridScreen(
                 genres = genresUiState.genres,
@@ -68,7 +66,7 @@ fun GenresGridScreen(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder( context = LocalContext.current)
-                        .data(genre.image_background)
+                        .data(genre.imageBackground)
                         .crossfade(true)
                         .build(),
                     contentScale = ContentScale.Crop,

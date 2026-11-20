@@ -7,6 +7,7 @@ import com.example.apiapp.network.Genre
 interface ApiAppRepository {
     suspend fun getGenres(): List<Genre>
     suspend fun getGamesByGenre(genreId: Int): List<Game>
+    suspend fun getGameDetails(gameId: Int): Game
 }
 
 class NetworkApiAppRepository(
@@ -16,9 +17,11 @@ class NetworkApiAppRepository(
         return apiService.getGenres().results
     }
 
-    override suspend fun getGamesByGenre(
-        genreId: Int
-    ): List<Game> {
+    override suspend fun getGamesByGenre(genreId: Int): List<Game> {
         return apiService.getGamesByGenre(genreId).results
+    }
+
+    override suspend fun getGameDetails(gameId: Int): Game {
+        return apiService.getGameDetails(gameId)
     }
 }
