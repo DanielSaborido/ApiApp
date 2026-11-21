@@ -145,22 +145,42 @@ private fun GameDetailsContent(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
-            DetailRow(
-                title = "Developers",
-                value = game.developers.joinToString { it.name }
-            )
-            DetailRow(
-                title = "Publishers",
-                value = game.publishers.joinToString { it.name }
-            )
-            DetailRow(
-                title = "Platforms",
-                value = game.platforms.joinToString { it.platform.name }
-            )
-            DetailRow(
-                title = "Genres",
-                value = game.genres.joinToString { it.name }
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    DetailRow(
+                        title = "Developers",
+                        value = game.developers.joinToString { it.name }
+                    )
+                    DetailRow(
+                        title = "Publishers",
+                        value = game.publishers.joinToString { it.name }
+                    )
+                }
+                VerticalDivider(
+                    modifier = Modifier
+                        .height(80.dp)
+                        .padding(horizontal = 8.dp)
+                )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    DetailRow(
+                        title = "Platforms",
+                        value = game.platforms.joinToString { it.platform.name }
+                    )
+                    DetailRow(
+                        title = "Genres",
+                        value = game.genres.joinToString { it.name }
+                    )
+                }
+            }
             if (!game.website.isNullOrBlank()) {
                 Button(
                     onClick = {
