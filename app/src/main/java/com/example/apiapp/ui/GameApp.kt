@@ -13,7 +13,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -59,20 +61,38 @@ fun GameApp(
 ) {
     val activity = LocalActivity.current as Activity
     val windowSizeClass = calculateWindowSizeClass(activity)
+    val systemTheme = isSystemInDarkTheme()
+    var isDarkTheme by rememberSaveable {
+        mutableStateOf(systemTheme)
+    }
+    val colorScheme = if (isDarkTheme) {
+        darkColorScheme()
+    } else {
+        lightColorScheme()
+    }
 
-    GameAppContent(
-        navController = navController,
-        windowSizeClass = windowSizeClass,
-        gameViewModel = gameViewModel
-    )
+    MaterialTheme(
+        colorScheme = colorScheme
+    ) {
+        GameAppContent(
+            navController = navController,
+            windowSizeClass = windowSizeClass,
+            gameViewModel = gameViewModel,
+            isDarkTheme = isDarkTheme,
+            onThemeToggle = {
+                isDarkTheme = !isDarkTheme
+            }
+        )
+    }
 }
 
-// Main app content and navigation
 @Composable
 private fun GameAppContent(
     navController: NavHostController,
     windowSizeClass: WindowSizeClass,
-    gameViewModel: GameViewModel
+    gameViewModel: GameViewModel,
+    isDarkTheme: Boolean,
+    onThemeToggle: () -> Unit
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -86,6 +106,8 @@ private fun GameAppContent(
     }?.name ?: "Games"
     val currentTitle = if (currentRoute == GameAppScreen.Games.route) {
         selectedGenreName
+    } else if (currentRoute == GameAppScreen.Game.route) {
+        GameAppScreen.Game.title
     } else {
         GameAppScreen.Genres.title
     }
@@ -101,13 +123,16 @@ private fun GameAppContent(
                 canNavigateBack = canNavigateBack,
                 navigateUp = {
                     navController.navigateUp()
-                }
+                },
+                isDarkTheme = isDarkTheme,
+                onThemeToggle = onThemeToggle
             )
         },
         bottomBar = {
             if (isCompact) {
                 GameBottomNavigationBar(
                     genres = genres,
+                    isDarkTheme = isDarkTheme,
                     selectedGenreId = selectedGenreId,
                     onGenreClick = { genreId, genreName ->
                         gameViewModel.getGamesByGenre(genreId)
@@ -128,9 +153,9 @@ private fun GameAppContent(
                 GameNavigationRail(
                     genres = genres,
                     selectedGenreId = selectedGenreId,
+                    isDarkTheme = isDarkTheme,
                     onGenreClick = { genreId, genreName ->
                         gameViewModel.getGamesByGenre(genreId)
-
                         navController.navigate("Games/$genreId") {
                             popUpTo(GameAppScreen.Genres.route) {
                                 inclusive = false
@@ -164,8 +189,7 @@ private fun GameAppContent(
                             type = NavType.IntType
                         }
                     )
-                ) { entry ->
-                    val genreId = entry.arguments?.getInt("genreId") ?: 0
+                ) {
                     if (!isCompact) {
                         Row(Modifier.fillMaxSize()) {
                             GamesScreen(
@@ -222,22 +246,50 @@ private fun GameAppContent(
 private fun GameAppBar(
     title: String,
     canNavigateBack: Boolean,
-    navigateUp: () -> Unit
+    navigateUp: () -> Unit,
+    isDarkTheme: Boolean,
+    onThemeToggle: () -> Unit
 ) {
     TopAppBar(
         title = {
-            Text(text = title)
+            Text(
+                text = title,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.fillMaxWidth()
+            )
         },
         navigationIcon = {
             if (canNavigateBack) {
                 IconButton(onClick = navigateUp) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
-        }
+        },
+        actions = {
+            IconButton(onClick = onThemeToggle) {
+                Icon(
+                    imageVector = if (isDarkTheme) {
+                        Icons.Default.DarkMode
+                    } else {
+                        Icons.Default.LightMode
+                    },
+                    contentDescription = if (isDarkTheme) {
+                        "Switch to light theme"
+                    } else {
+                        "Switch to dark theme"
+                    },
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        )
     )
 }
 
@@ -246,6 +298,7 @@ private fun GameAppBar(
 @Composable
 private fun GameBottomNavigationBar(
     genres: List<Genre>,
+    isDarkTheme: Boolean,
     selectedGenreId: Int?,
     onGenreClick: (Int, String) -> Unit
 ) {
@@ -291,7 +344,7 @@ private fun GameBottomNavigationBar(
                             painter = painterResource(id = drawableId),
                             contentDescription = genre.name,
                             modifier = Modifier.size(24.dp),
-                            tint = if (isSystemInDarkTheme()) Color.White else Color.Black
+                            tint = if (isDarkTheme) Color.White else Color.Black
                         )
                     } else {
                         Icon(
@@ -317,6 +370,7 @@ private fun GameBottomNavigationBar(
 @Composable
 private fun GameNavigationRail(
     genres: List<Genre>,
+    isDarkTheme: Boolean,
     selectedGenreId: Int?,
     onGenreClick: (Int, String) -> Unit
 ) {
@@ -362,7 +416,7 @@ private fun GameNavigationRail(
                         painter = painterResource(id = drawableId),
                         contentDescription = genre.name,
                         modifier = Modifier.size(28.dp),
-                        tint = if (isSystemInDarkTheme()) Color.White else Color.Black
+                        tint = if (isDarkTheme) Color.White else Color.Black
                     )
                 } else {
                     Icon(
